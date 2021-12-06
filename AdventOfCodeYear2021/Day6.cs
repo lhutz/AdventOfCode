@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tidy.AdventOfCode;
 
 namespace AdventOfCodeYear2021
@@ -23,49 +24,23 @@ namespace AdventOfCodeYear2021
             return GetAmountOfFishAfterDays(256);
         }
 
-        private object GetAmountOfFishAfterDays(int days)
+        public long GetAmountOfFishAfterDays(int days)
         {
-            return Input
-                .Select(_ => new LanternFish(_).DaysPasses(days))
-                .Sum(fish => fish.GetAmountOfOffspringPlusMe());
-        }
-    }
-
-    public class LanternFish
-    {
-        public int InternalTimer { get; private set; }
-        private readonly List<LanternFish> _children;
-        public LanternFish()
-        {
-            InternalTimer = 8;
-            _children = new List<LanternFish>();
-        }
-
-        public LanternFish(int internalTimer)
-        {
-            InternalTimer = internalTimer;
-            _children = new List<LanternFish>();
-        }
-
-        public LanternFish DaysPasses(int days)
-        {
-            for (int i = 1; i <= days; i++)
+            var fish = new long[9];
+            foreach (var fishGroup in Input.GroupBy(f => f))
             {
-                InternalTimer--;
-                if (InternalTimer < 0)
-                {
-                    _children.Add(new LanternFish().DaysPasses(days - i));
-                    InternalTimer = 6;
-                }
+                fish[fishGroup.Key] = fishGroup.Count();
             }
 
-            return this;
-        }
+            for (var day = 1; day <= days; day++)
+            {
+                var mommies = fish[0];
+                Array.Copy(fish, 1, fish, 0, fish.Length - 1);
+                fish[6] += mommies;
+                fish[8] = mommies;
+            }
 
-        public long GetAmountOfOffspringPlusMe()
-        {
-            return 1 + _children.Sum(lanternFish => lanternFish.GetAmountOfOffspringPlusMe());
+            return fish.Sum();
         }
-
     }
 }
